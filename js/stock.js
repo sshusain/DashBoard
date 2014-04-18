@@ -104,11 +104,11 @@ d3.json("data/worldbank.json", function (error, oldData) {
     );
 */
     // create categorical dimension
-    var intrument = ndx.dimension(function (d) {
-        return d.LendInstrType;
+    var instrument = ndx.dimension(function (d) {
+        return d.LendInstr;
     });
     // produce counts records in the dimension
-    var instrumentGroup = gainOrLoss.group();
+    var instrumentGroup = instrument.group();
 /*
     // determine a histogram of percent changes
     var fluctuation = ndx.dimension(function (d) {
