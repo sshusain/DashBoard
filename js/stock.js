@@ -1,6 +1,6 @@
 'use strict';
-/* var gainOrLossChart = dc.pieChart("#gain-loss-chart");
-var fluctuationChart = dc.barChart("#fluctuation-chart");
+var instrumentChart = dc.pieChart("#instrument-chart");
+/*var fluctuationChart = dc.barChart("#fluctuation-chart");
 var quarterChart = dc.pieChart("#quarter-chart");
 var dayOfWeekChart = dc.rowChart("#day-of-week-chart");
 var moveChart = dc.lineChart("#monthly-move-chart");
@@ -102,14 +102,14 @@ d3.json("data/worldbank.json", function (error, oldData) {
             return {days: 0, total: 0, avg: 0};
         }
     );
-
+*/
     // create categorical dimension
-    var gainOrLoss = ndx.dimension(function (d) {
-        return d.open > d.close ? "Loss" : "Gain";
+    var intrument = ndx.dimension(function (d) {
+        return d.LendInstrType;
     });
     // produce counts records in the dimension
-    var gainOrLossGroup = gainOrLoss.group();
-
+    var instrumentGroup = gainOrLoss.group();
+/*
     // determine a histogram of percent changes
     var fluctuation = ndx.dimension(function (d) {
         return Math.round((d.close - d.open) / d.open * 100);
@@ -141,15 +141,8 @@ d3.json("data/worldbank.json", function (error, oldData) {
     var dayOfWeekGroup = dayOfWeek.group(); */
 
     //### Define Chart Attributes
-    //Define chart attributes using fluent methods. See the [dc API Reference](https://github.com/NickQiZhu/dc.js/blob/master/web/docs/api-1.7.0.md) for more information
-    //
 
-    //#### Bubble Chart
-    //Create a bubble chart and use the given css selector as anchor. You can also specify
-    //an optional chart group for this chart to be scoped within. When a chart belongs
-    //to a specific group then any interaction with such chart will only trigger redraw
-    //on other charts within the same chart group.
-    /* dc.bubbleChart("#yearly-bubble-chart", "chartGroup") */
+    // Bubble Chart
     yearlyBubbleChart
         .width(990) // (optional) define chart width, :default = 200
         .height(250)  // (optional) define chart height, :default = 200
@@ -215,18 +208,18 @@ d3.json("data/worldbank.json", function (error, oldData) {
 
     // #### Pie/Donut Chart
 
-/*     gainOrLossChart
+     instrumentChart
         .width(180) // (optional) define chart width, :default = 200
         .height(180) // (optional) define chart height, :default = 200
         .radius(80) // define pie radius
-        .dimension(gainOrLoss) // set dimension
-        .group(gainOrLossGroup) // set group
+        .dimension(instrument) // set dimension
+        .group(instrumentGroup) // set group
         .label(function (d) {
-            if (gainOrLossChart.hasFilter() && !gainOrLossChart.hasFilter(d.key))
+            if (instrumentChart.hasFilter() && !instrumentChart.hasFilter(d.key))
                 return d.key + "(0%)";
             return d.key + "(" + Math.floor(d.value / all.value() * 100) + "%)";
         });
-
+/*
     quarterChart.width(180)
         .height(180)
         .radius(80)
