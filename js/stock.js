@@ -1,10 +1,10 @@
 'use strict';
 var instrumentChart = dc.pieChart("#instrument-chart");
-/*var fluctuationChart = dc.barChart("#fluctuation-chart");
-var quarterChart = dc.pieChart("#quarter-chart");
-var dayOfWeekChart = dc.rowChart("#day-of-week-chart");
-var moveChart = dc.lineChart("#monthly-move-chart");
-var volumeChart = dc.barChart("#monthly-volume-chart"); */
+//var fluctuationChart = dc.barChart("#fluctuation-chart");
+var regionChart = dc.pieChart("#region-chart");
+//var dayOfWeekChart = dc.rowChart("#day-of-week-chart");
+//var moveChart = dc.lineChart("#monthly-move-chart");
+//var volumeChart = dc.barChart("#monthly-volume-chart"); */
 var yearlyBubbleChart = dc.bubbleChart("#yearly-bubble-chart");
 
 
@@ -115,23 +115,13 @@ d3.json("data/worldbank.json", function (error, oldData) {
         return Math.round((d.close - d.open) / d.open * 100);
     });
     var fluctuationGroup = fluctuation.group();
-
-    // summerize volume by quarter
-    var quarter = ndx.dimension(function (d) {
-        var month = d.dd.getMonth();
-        if (month <= 2)
-            return "Q1";
-        else if (month > 3 && month <= 5)
-            return "Q2";
-        else if (month > 5 && month <= 8)
-            return "Q3";
-        else
-            return "Q4";
+*/
+    // summerize volume by region
+    var region = ndx.dimension(function (d) {
+        return d.Region;
     });
-    var quarterGroup = quarter.group().reduceSum(function (d) {
-        return d.volume;
-    });
-
+    var regionGroup = quarter.group();
+/*
     // counts per weekday
     var dayOfWeek = ndx.dimension(function (d) {
         var day = d.dd.getDay();
@@ -219,14 +209,14 @@ d3.json("data/worldbank.json", function (error, oldData) {
                 return d.key + "(0%)";
             return d.key + "(" + Math.floor(d.value / all.value() * 100) + "%)";
         });
-/*
-    quarterChart.width(180)
+
+    regionChart.width(180)
         .height(180)
         .radius(80)
         .innerRadius(30)
-        .dimension(quarter)
-        .group(quarterGroup);
-
+        .dimension(region)
+        .group(regionGroup);
+/*
     //#### Row Chart
     dayOfWeekChart.width(180)
         .height(180)
