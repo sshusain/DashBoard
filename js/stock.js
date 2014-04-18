@@ -1,10 +1,8 @@
 'use strict';
 var instrumentChart = dc.pieChart("#instrument-chart");
-//var fluctuationChart = dc.barChart("#fluctuation-chart");
+var exitfyChart = dc.barChart("#exitfy-chart");
 var regionChart = dc.pieChart("#region-chart");
-//var dayOfWeekChart = dc.rowChart("#day-of-week-chart");
-//var moveChart = dc.lineChart("#monthly-move-chart");
-//var volumeChart = dc.barChart("#monthly-volume-chart"); */
+var dayOfWeekChart = dc.rowChart("#day-of-week-chart");
 var yearlyBubbleChart = dc.bubbleChart("#yearly-bubble-chart");
 
 
@@ -77,58 +75,32 @@ d3.json("data/worldbank.json", function (error, oldData) {
     var moveMonths = ndx.dimension(function (d) {
         return d.month;
     });
-/*    // group by total movement within month
-    var monthlyMoveGroup = moveMonths.group().reduceSum(function (d) {
-        return Math.abs(d.close - d.open);
-    });
-    // group by total volume within move, and scale down result
-    var volumeByMonthGroup = moveMonths.group().reduceSum(function (d) {
-        return d.volume / 500000;
-    });
-    var indexAvgByMonthGroup = moveMonths.group().reduce(
-        function (p, v) {
-            ++p.days;
-            p.total += (v.open + v.close) / 2;
-            p.avg = Math.round(p.total / p.days);
-            return p;
-        },
-        function (p, v) {
-            --p.days;
-            p.total -= (v.open + v.close) / 2;
-            p.avg = p.days ? Math.round(p.total / p.days) : 0;
-            return p;
-        },
-        function () {
-            return {days: 0, total: 0, avg: 0};
-        }
-    );
-*/
     // create categorical dimension
     var instrument = ndx.dimension(function (d) {
         return d.LendInstr;
     });
     // produce counts records in the dimension
     var instrumentGroup = instrument.group();
-/*
+
     // determine a histogram of percent changes
-    var fluctuation = ndx.dimension(function (d) {
-        return Math.round((d.close - d.open) / d.open * 100);
+    var exitfy = ndx.dimension(function (d) {
+        return d.ExitFY;
     });
-    var fluctuationGroup = fluctuation.group();
-*/
+    var exitfyGroup = exitfy.group();
+
     // summerize volume by region
     var region = ndx.dimension(function (d) {
         return d.Region;
     });
-    var regionGroup = quarter.group();
-/*
+    var regionGroup = region.group();
+
     // counts per weekday
     var dayOfWeek = ndx.dimension(function (d) {
         var day = d.dd.getDay();
         var name=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
         return day+"."+name[day];
      });
-    var dayOfWeekGroup = dayOfWeek.group(); */
+    var dayOfWeekGroup = dayOfWeek.group(); 
 
     //### Define Chart Attributes
 
@@ -145,12 +117,6 @@ d3.json("data/worldbank.json", function (error, oldData) {
         .colors(colorbrewer.RdYlGn[9]) // (optional) define color function or array for bubbles
         .colorDomain([0, 300000000]) //(optional) define color domain to match your data domain if you want to bind data or color
         //##### Accessors
-        //Accessor functions are applied to each value returned by the grouping
-        //
-        //* `.colorAccessor` The returned value will be mapped to an internal scale to determine a fill color
-        //* `.keyAccessor` Identifies the `X` value that will be applied against the `.x()` to identify pixel location
-        //* `.valueAccessor` Identifies the `Y` value that will be applied agains the `.y()` to identify pixel location
-        //* `.radiusValueAccessor` Identifies the value that will be applied agains the `.r()` determine radius size, by default this maps linearly to [0,100]
         .colorAccessor(function (d) {
             return d.value.avglend;
         })
@@ -164,8 +130,8 @@ d3.json("data/worldbank.json", function (error, oldData) {
             return p.value.count;
         })
         .maxBubbleRelativeSize(0.3)
-        .x(d3.scale.linear().domain([-10000, 100000000]))
-        .y(d3.scale.linear().domain([-50000,10000 ]))
+        .x(d3.scale.linear().domain([0, 300000000]))
+        .y(d3.scale.linear().domain([-5000,5000 ]))
         .r(d3.scale.linear().domain([0, 5000]))
         //##### Elastic Scaling
         //`.elasticX` and `.elasticX` determine whether the chart should rescale each axis to fit data.
@@ -192,10 +158,7 @@ d3.json("data/worldbank.json", function (error, oldData) {
                    "Fluctuation / Index Ratio: " + numberFormat(p.value.fluctuationPercentage) + "%"*/]
                    .join("\n"); 
         })
-        //#### Customize Axis
-        //Set a custom tick format. Note `.yAxis()` returns an axis object, so any additional method chaining applies to the axis, not the chart.
-        
-
+		
     // #### Pie/Donut Chart
 
      instrumentChart
@@ -213,10 +176,11 @@ d3.json("data/worldbank.json", function (error, oldData) {
     regionChart.width(180)
         .height(180)
         .radius(80)
+		
         .innerRadius(30)
         .dimension(region)
         .group(regionGroup);
-/*
+
     //#### Row Chart
     dayOfWeekChart.width(180)
         .height(180)
@@ -224,7 +188,7 @@ d3.json("data/worldbank.json", function (error, oldData) {
         .group(dayOfWeekGroup)
         .dimension(dayOfWeek)
         // assign colors to each value in the x scale domain
-        .ordinalColors(['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb'])
+        .ordinalColors(['#3182bd', '#6baed6', '#8ecae1', '#a6dbef', '#badaeb','#cadaeb','#dadaeb' ])
         .label(function (d) {
             return d.key.split(".")[1];
         })
@@ -236,11 +200,11 @@ d3.json("data/worldbank.json", function (error, oldData) {
         .xAxis().ticks(4);
 
     //#### Bar Chart
-    fluctuationChart.width(420)
+    exitfyChart.width(420)
         .height(180)
         .margins({top: 10, right: 50, bottom: 30, left: 40})
-        .dimension(fluctuation)
-        .group(fluctuationGroup)
+        .dimension(exitfy)
+        .group(exitfyGroup)
         .elasticY(true)
         // (optional) whether bar should be center to its x value. Not needed for ordinal chart, :default=false
         .centerBar(true)
@@ -249,122 +213,18 @@ d3.json("data/worldbank.json", function (error, oldData) {
         // (optional) set filter brush rounding
         .round(dc.round.floor)
         .alwaysUseRounding(true)
-        .x(d3.scale.linear().domain([-25, 25]))
+        .x(d3.scale.linear().domain([1960, 2020]))
         .renderHorizontalGridLines(true)
         // customize the filter displayed in the control span
         .filterPrinter(function (filters) {
             var filter = filters[0], s = "";
-            s += numberFormat(filter[0]) + "% -> " + numberFormat(filter[1]) + "%";
+            s += filter[0] + " -> " + (filter[1]) ;
             return s;
         });
+		exitfyChart.xAxis().tickFormat(d3.format("d"))
 
     // Customize axis
-    fluctuationChart.xAxis().tickFormat(
-        function (v) { return v + "%"; });
-    fluctuationChart.yAxis().ticks(5);
+    exitfyChart.yAxis().ticks(5);
 
-    //#### Stacked Area Chart
-    //Specify an area chart, by using a line chart with `.renderArea(true)`
-    moveChart
-        .renderArea(true)
-        .width(990)
-        .height(200)
-        .transitionDuration(1000)
-        .margins({top: 30, right: 50, bottom: 25, left: 40})
-        .dimension(moveMonths)
-        .mouseZoomable(true)
-        // Specify a range chart to link the brush extent of the range with the zoom focue of the current chart.
-        .rangeChart(volumeChart)
-        .x(d3.time.scale().domain([new Date(1985, 0, 1), new Date(2012, 11, 31)]))
-        .round(d3.time.month.round)
-        .xUnits(d3.time.months)
-        .elasticY(true)
-        .renderHorizontalGridLines(true)
-        .legend(dc.legend().x(800).y(10).itemHeight(13).gap(5))
-        .brushOn(false)
-        // Add the base layer of the stack with group. The second parameter specifies a series name for use in the legend
-        // The `.valueAccessor` will be used for the base layer
-        .group(indexAvgByMonthGroup, "Monthly Index Average")
-        .valueAccessor(function (d) {
-            return d.value.avg;
-        })
-        // stack additional layers with `.stack`. The first paramenter is a new group.
-        // The second parameter is the series name. The third is a value accessor.
-        .stack(monthlyMoveGroup, "Monthly Index Move", function (d) {
-            return d.value;
-        })
-        // title can be called by any stack layer.
-        .title(function (d) {
-            var value = d.value.avg ? d.value.avg : d.value;
-            if (isNaN(value)) value = 0;
-            return dateFormat(d.key) + "\n" + numberFormat(value);
-        });
-
-    volumeChart.width(990)
-        .height(40)
-        .margins({top: 0, right: 50, bottom: 20, left: 40})
-        .dimension(moveMonths)
-        .group(volumeByMonthGroup)
-        .centerBar(true)
-        .gap(1)
-        .x(d3.time.scale().domain([new Date(1985, 0, 1), new Date(2012, 11, 31)]))
-        .round(d3.time.month.round)
-        .alwaysUseRounding(true)
-        .xUnits(d3.time.months);
-
-    
-    //#### Data Count
-    
-    dc.dataCount(".dc-data-count")
-        .dimension(ndx)
-        .group(all);
-
-    
-    //#### Data Table
-    
-    dc.dataTable(".dc-data-table")
-        .dimension(dateDimension)
-        // data table does not use crossfilter group but rather a closure
-        // as a grouping function
-        .group(function (d) {
-            var format = d3.format("02d");
-            return d.dd.getFullYear() + "/" + format((d.dd.getMonth() + 1));
-        })
-        .size(10) // (optional) max number of records to be shown, :default = 25
-        // dynamic columns creation using an array of closures
-        .columns([
-            function (d) {
-                return d.date;
-            },
-            function (d) {
-                return numberFormat(d.open);
-            },
-            function (d) {
-                return numberFormat(d.close);
-            },
-            function (d) {
-                return numberFormat(d.close - d.open);
-            },
-            function (d) {
-                return d.volume;
-            }
-        ])
-        // (optional) sort using the given field, :default = function(d){return d;}
-        .sortBy(function (d) {
-            return d.dd;
-        })
-        // (optional) sort order, :default ascending
-        .order(d3.ascending)
-        // (optional) custom renderlet to post-process chart using D3
-        .renderlet(function (table) {
-            table.selectAll(".dc-table-group").classed("info", true);
-        });
-	*/
-    //#### Rendering
-    //simply call renderAll() to render all charts on the page
     dc.renderAll();
 });
-/*
-//#### Version
-//Determine the current version of dc with `dc.version`
-d3.selectAll("#version").text(dc.version); */
