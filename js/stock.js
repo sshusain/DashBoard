@@ -8,25 +8,20 @@ var volumeChart = dc.barChart("#monthly-volume-chart");
 var yearlyBubbleChart = dc.bubbleChart("#yearly-bubble-chart");
 
 
-//### Load your data
-//Data can be loaded through regular means with your
-//favorite javascript library
-//
-//```javascript
-//d3.csv("data.csv", function(data) {...};
-//d3.json("data.json", function(data) {...};
-//jQuery.getJson("data.json", function(data){...});
-//```
+//Load data
 d3.json("data/worldbank.json", function (error, oldData) {
 	if(error)
 	{
 		console.log("!!!ERRROR!!!:"+error)
 		return;
 	}
-	/* since its a csv file we need to format the data a bit */
+	
+	//formatting
     var dateFormat = d3.time.format("%m/%d/%Y");
     var numberFormat = d3.format(".2f");
 	var data=[];
+	
+	//data processing and verification
     oldData.forEach(function (d) {
 		if(d.ApprovalDate)
 		{
@@ -36,6 +31,8 @@ d3.json("data/worldbank.json", function (error, oldData) {
 			data.push(d)
 		}
     });
+	
+	//initializing crossfilter
     var ndx = crossfilter(data);
     var all = ndx.groupAll();
 
@@ -43,37 +40,35 @@ d3.json("data/worldbank.json", function (error, oldData) {
     var yearlyDimension = ndx.dimension(function (d) {
         return d3.time.year(d.dd).getFullYear();
     });
+	
+	
     // maintain running tallies by year as filters are applied or removed
     var yearlyPerformanceGroup = yearlyDimension.group().reduce(
         /* callback for when data is added to the current filter results */
         function (p, v) {
             ++p.count;
-            p.absGain += v.close - v.open;
-            p.fluctuation += Math.abs(v.close - v.open);
-            p.sumIndex += (v.open + v.close) / 2;
-            p.avgIndex = p.sumIndex / p.count;
-            p.percentageGain = (p.absGain / p.avgIndex) * 100;
-            p.fluctuationPercentage = (p.fluctuation / p.avgIndex) * 100;
+            p.lendcost += v.LendProjCost;
+            p.duration += v.Duration;
+            p.avglend=p.lendcost/p.count;
+            p.avgdur=p.duration/p.count;
             return p;
         },
         /* callback for when data is removed from the current filter results */
         function (p, v) {
             --p.count;
-            p.absGain -= v.close - v.open;
-            p.fluctuation -= Math.abs(v.close - v.open);
-            p.sumIndex -= (v.open + v.close) / 2;
-            p.avgIndex = p.sumIndex / p.count;
-            p.percentageGain = (p.absGain / p.avgIndex) * 100;
-            p.fluctuationPercentage = (p.fluctuation / p.avgIndex) * 100;
+            p.lendcost -= v.LendProjCost;
+            p.duration -= v.Duration;
+            p.avglend=p.lendcost/p.count;
+            p.avgdur=p.duration/p.count;
             return p;
         },
         /* initialize p */
         function () {
-            return {count: 0, absGain: 0, fluctuation: 0, fluctuationPercentage: 0, sumIndex: 0, avgIndex: 0, percentageGain: 0};
+            return {count: 0, lendcost:0, avglend:0, duration:0, avgdur:0};
         }
     );
 
-    // dimension by full date
+     // dimension by full date
     var dateDimension = ndx.dimension(function (d) {
         return d.dd;
     });
@@ -82,7 +77,7 @@ d3.json("data/worldbank.json", function (error, oldData) {
     var moveMonths = ndx.dimension(function (d) {
         return d.month;
     });
-    // group by total movement within month
+/*    // group by total movement within month
     var monthlyMoveGroup = moveMonths.group().reduceSum(function (d) {
         return Math.abs(d.close - d.open);
     });
@@ -143,7 +138,7 @@ d3.json("data/worldbank.json", function (error, oldData) {
         var name=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
         return day+"."+name[day];
      });
-    var dayOfWeekGroup = dayOfWeek.group();
+    var dayOfWeekGroup = dayOfWeek.group(); */
 
     //### Define Chart Attributes
     //Define chart attributes using fluent methods. See the [dc API Reference](https://github.com/NickQiZhu/dc.js/blob/master/web/docs/api-1.7.0.md) for more information
@@ -165,7 +160,7 @@ d3.json("data/worldbank.json", function (error, oldData) {
         //to generate x, y, and radius for each key (bubble) in the group
         .group(yearlyPerformanceGroup)
         .colors(colorbrewer.RdYlGn[9]) // (optional) define color function or array for bubbles
-        .colorDomain([-500, 500]) //(optional) define color domain to match your data domain if you want to bind data or color
+        .colorDomain([0, 10000000]) //(optional) define color domain to match your data domain if you want to bind data or color
         //##### Accessors
         //Accessor functions are applied to each value returned by the grouping
         //
@@ -174,21 +169,21 @@ d3.json("data/worldbank.json", function (error, oldData) {
         //* `.valueAccessor` Identifies the `Y` value that will be applied agains the `.y()` to identify pixel location
         //* `.radiusValueAccessor` Identifies the value that will be applied agains the `.r()` determine radius size, by default this maps linearly to [0,100]
         .colorAccessor(function (d) {
-            return d.value.absGain;
+            return d.value.avgleng;
         })
         .keyAccessor(function (p) {
-            return p.value.absGain;
+            return p.value.avglend;
         })
         .valueAccessor(function (p) {
-            return p.value.percentageGain;
+            return p.value.avgdur;
         })
         .radiusValueAccessor(function (p) {
-            return p.value.fluctuationPercentage;
+            return p.value.count;
         })
         .maxBubbleRelativeSize(0.3)
-        .x(d3.scale.linear().domain([-2500, 2500]))
-        .y(d3.scale.linear().domain([-100, 100]))
-        .r(d3.scale.linear().domain([0, 4000]))
+        .x(d3.scale.linear().domain([0, 10000000]))
+        .y(d3.scale.linear().domain([-50000,10000 ]))
+        .r(d3.scale.linear().domain([0, 5000]))
         //##### Elastic Scaling
         //`.elasticX` and `.elasticX` determine whether the chart should rescale each axis to fit data.
         //The `.yAxisPadding` and `.xAxisPadding` add padding to data above and below their max values in the same unit domains as the Accessors.
@@ -208,11 +203,11 @@ d3.json("data/worldbank.json", function (error, oldData) {
         })
         .renderTitle(true) // (optional) whether chart should render titles, :default = false
         .title(function (p) {
-            return [p.key,
+            return [p.key/* ,
                    "Index Gain: " + numberFormat(p.value.absGain),
                    "Index Gain in Percentage: " + numberFormat(p.value.percentageGain) + "%",
                    "Fluctuation / Index Ratio: " + numberFormat(p.value.fluctuationPercentage) + "%"]
-                   .join("\n");
+                   .join("\n"); */
         })
         //#### Customize Axis
         //Set a custom tick format. Note `.yAxis()` returns an axis object, so any additional method chaining applies to the axis, not the chart.
@@ -221,37 +216,18 @@ d3.json("data/worldbank.json", function (error, oldData) {
         });
 
     // #### Pie/Donut Chart
-    // Create a pie chart and use the given css selector as anchor. You can also specify
-    // an optional chart group for this chart to be scoped within. When a chart belongs
-    // to a specific group then any interaction with such chart will only trigger redraw
-    // on other charts within the same chart group.
 
-    gainOrLossChart
+/*     gainOrLossChart
         .width(180) // (optional) define chart width, :default = 200
         .height(180) // (optional) define chart height, :default = 200
         .radius(80) // define pie radius
         .dimension(gainOrLoss) // set dimension
         .group(gainOrLossGroup) // set group
-        /* (optional) by default pie chart will use group.key as it's label
-         * but you can overwrite it with a closure */
         .label(function (d) {
             if (gainOrLossChart.hasFilter() && !gainOrLossChart.hasFilter(d.key))
                 return d.key + "(0%)";
             return d.key + "(" + Math.floor(d.value / all.value() * 100) + "%)";
-        }) /*
-        // (optional) whether chart should render labels, :default = true
-        .renderLabel(true)
-        // (optional) if inner radius is used then a donut chart will be generated instead of pie chart
-        .innerRadius(40)
-        // (optional) define chart transition duration, :default = 350
-        .transitionDuration(500)
-        // (optional) define color array for slices
-        .colors(['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb'])
-        // (optional) define color domain to match your data domain if you want to bind data or color
-        .colorDomain([-1750, 1644])
-        // (optional) define color value accessor
-        .colorAccessor(function(d, i){return d.value;})
-        */;
+        });
 
     quarterChart.width(180)
         .height(180)
@@ -279,11 +255,6 @@ d3.json("data/worldbank.json", function (error, oldData) {
         .xAxis().ticks(4);
 
     //#### Bar Chart
-    // Create a bar chart and use the given css selector as anchor. You can also specify
-    // an optional chart group for this chart to be scoped within. When a chart belongs
-    // to a specific group then any interaction with such chart will only trigger redraw
-    // on other charts within the same chart group.
-    /* dc.barChart("#volume-month-chart") */
     fluctuationChart.width(420)
         .height(180)
         .margins({top: 10, right: 50, bottom: 30, left: 40})
@@ -360,39 +331,16 @@ d3.json("data/worldbank.json", function (error, oldData) {
         .alwaysUseRounding(true)
         .xUnits(d3.time.months);
 
-    /*
+    
     //#### Data Count
-    // Create a data count widget and use the given css selector as anchor. You can also specify
-    // an optional chart group for this chart to be scoped within. When a chart belongs
-    // to a specific group then any interaction with such chart will only trigger redraw
-    // on other charts within the same chart group.
-    <div id="data-count">
-        <span class="filter-count"></span> selected out of <span class="total-count"></span> records
-    </div>
-    */
+    
     dc.dataCount(".dc-data-count")
         .dimension(ndx)
         .group(all);
 
-    /*
+    
     //#### Data Table
-    // Create a data table widget and use the given css selector as anchor. You can also specify
-    // an optional chart group for this chart to be scoped within. When a chart belongs
-    // to a specific group then any interaction with such chart will only trigger redraw
-    // on other charts within the same chart group.
-    <!-- anchor div for data table -->
-    <div id="data-table">
-        <!-- create a custom header -->
-        <div class="header">
-            <span>Date</span>
-            <span>Open</span>
-            <span>Close</span>
-            <span>Change</span>
-            <span>Volume</span>
-        </div>
-        <!-- data rows will filled in here -->
-    </div>
-    */
+    
     dc.dataTable(".dc-data-table")
         .dimension(dateDimension)
         // data table does not use crossfilter group but rather a closure
@@ -434,17 +382,8 @@ d3.json("data/worldbank.json", function (error, oldData) {
     //#### Rendering
     //simply call renderAll() to render all charts on the page
     dc.renderAll();
-    /*
-    // or you can render charts belong to a specific chart group
-    dc.renderAll("group");
-    // once rendered you can call redrawAll to update charts incrementally when data
-    // change without re-rendering everything
-    dc.redrawAll();
-    // or you can choose to redraw only those charts associated with a specific chart group
-    dc.redrawAll("group");
-    */
 });
 
 //#### Version
 //Determine the current version of dc with `dc.version`
-d3.selectAll("#version").text(dc.version);
+d3.selectAll("#version").text(dc.version); */
