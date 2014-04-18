@@ -1,10 +1,10 @@
 'use strict';
-var gainOrLossChart = dc.pieChart("#gain-loss-chart");
+/* var gainOrLossChart = dc.pieChart("#gain-loss-chart");
 var fluctuationChart = dc.barChart("#fluctuation-chart");
 var quarterChart = dc.pieChart("#quarter-chart");
 var dayOfWeekChart = dc.rowChart("#day-of-week-chart");
 var moveChart = dc.lineChart("#monthly-move-chart");
-var volumeChart = dc.barChart("#monthly-volume-chart");
+var volumeChart = dc.barChart("#monthly-volume-chart"); */
 var yearlyBubbleChart = dc.bubbleChart("#yearly-bubble-chart");
 
 
@@ -160,7 +160,7 @@ d3.json("data/worldbank.json", function (error, oldData) {
         //to generate x, y, and radius for each key (bubble) in the group
         .group(yearlyPerformanceGroup)
         .colors(colorbrewer.RdYlGn[9]) // (optional) define color function or array for bubbles
-        .colorDomain([0, 10000000]) //(optional) define color domain to match your data domain if you want to bind data or color
+        .colorDomain([0, 300000000]) //(optional) define color domain to match your data domain if you want to bind data or color
         //##### Accessors
         //Accessor functions are applied to each value returned by the grouping
         //
@@ -169,7 +169,7 @@ d3.json("data/worldbank.json", function (error, oldData) {
         //* `.valueAccessor` Identifies the `Y` value that will be applied agains the `.y()` to identify pixel location
         //* `.radiusValueAccessor` Identifies the value that will be applied agains the `.r()` determine radius size, by default this maps linearly to [0,100]
         .colorAccessor(function (d) {
-            return d.value.avgleng;
+            return d.value.avglend;
         })
         .keyAccessor(function (p) {
             return p.value.avglend;
@@ -181,7 +181,7 @@ d3.json("data/worldbank.json", function (error, oldData) {
             return p.value.count;
         })
         .maxBubbleRelativeSize(0.3)
-        .x(d3.scale.linear().domain([0, 10000000]))
+        .x(d3.scale.linear().domain([-10000, 100000000]))
         .y(d3.scale.linear().domain([-50000,10000 ]))
         .r(d3.scale.linear().domain([0, 5000]))
         //##### Elastic Scaling
@@ -193,8 +193,8 @@ d3.json("data/worldbank.json", function (error, oldData) {
         .xAxisPadding(500)
         .renderHorizontalGridLines(true) // (optional) render horizontal grid lines, :default=false
         .renderVerticalGridLines(true) // (optional) render vertical grid lines, :default=false
-        .xAxisLabel('Index Gain') // (optional) render an axis label below the x axis
-        .yAxisLabel('Index Gain %') // (optional) render a vertical axis lable left of the y axis
+        .xAxisLabel('Avg. Lending Amount') // (optional) render an axis label below the x axis
+        .yAxisLabel('Avg. Duration') // (optional) render a vertical axis lable left of the y axis
         //#### Labels and  Titles
         //Labels are displaed on the chart for each bubble. Titles displayed on mouseover.
         .renderLabel(true) // (optional) whether chart should render labels, :default = true
@@ -206,14 +206,12 @@ d3.json("data/worldbank.json", function (error, oldData) {
             return [p.key/* ,
                    "Index Gain: " + numberFormat(p.value.absGain),
                    "Index Gain in Percentage: " + numberFormat(p.value.percentageGain) + "%",
-                   "Fluctuation / Index Ratio: " + numberFormat(p.value.fluctuationPercentage) + "%"]
-                   .join("\n"); */
+                   "Fluctuation / Index Ratio: " + numberFormat(p.value.fluctuationPercentage) + "%"*/]
+                   .join("\n"); 
         })
         //#### Customize Axis
         //Set a custom tick format. Note `.yAxis()` returns an axis object, so any additional method chaining applies to the axis, not the chart.
-        .yAxis().tickFormat(function (v) {
-            return v + "%";
-        });
+        
 
     // #### Pie/Donut Chart
 
@@ -378,12 +376,12 @@ d3.json("data/worldbank.json", function (error, oldData) {
         .renderlet(function (table) {
             table.selectAll(".dc-table-group").classed("info", true);
         });
-
+	*/
     //#### Rendering
     //simply call renderAll() to render all charts on the page
     dc.renderAll();
 });
-
+/*
 //#### Version
 //Determine the current version of dc with `dc.version`
 d3.selectAll("#version").text(dc.version); */
