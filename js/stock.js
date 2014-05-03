@@ -106,8 +106,8 @@ d3.json("data/worldbank.json", function (error, oldData) {
 
     // Bubble Chart
     yearlyBubbleChart
-        .width(990) // (optional) define chart width, :default = 200
-        .height(250)  // (optional) define chart height, :default = 200
+        .width(840) // (optional) define chart width, :default = 200
+        .height(200)  // (optional) define chart height, :default = 200
         .transitionDuration(1500) // (optional) define chart transition duration, :default = 750
         .margins({top: 10, right: 50, bottom: 30, left: 40})
         .dimension(yearlyDimension)
@@ -188,7 +188,7 @@ d3.json("data/worldbank.json", function (error, oldData) {
         .group(dayOfWeekGroup)
         .dimension(dayOfWeek)
         // assign colors to each value in the x scale domain
-        .ordinalColors(['#3182bd', '#6baed6', '#8ecae1', '#a6dbef', '#badaeb','#cadaeb','#dadaeb' ])
+        .ordinalColors(['#3182bd', '#6baed6', '#3ecae1', '#46dbef', '#5adaeb','#6adaeb','#dadaeb' ])
         .label(function (d) {
             return d.key.split(".")[1];
         })
